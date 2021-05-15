@@ -17,7 +17,7 @@ const cliente = {
   surname: "Landa",
   email: "test_user_46542185@testuser.com",
   phone: {
-    number: "5549737300",
+    number: 5549737300,
     area_code: "52",
   },
   address: {
@@ -47,7 +47,11 @@ const metodos_pago = {
 
 const preferencia = {
   items: [],
-  back_urls: {},
+  back_urls: {
+    success: "",
+    pending: "",
+    failure: "",
+  },
   payment_methods: metodos_pago,
   payer: cliente,
   auto_return: "approved",
@@ -65,7 +69,7 @@ app.get("/", function (req, res) {
   res.render("home");
 });
 
-app.get("/detail", function (req, res) {
+app.get("/detail", async function (req, res) {
   console.log(req.query);
   // crear el objeto item y agregarlo al array de items de la preferencia (leer la documentacion para ello)
   //    req.query = {
@@ -80,11 +84,19 @@ app.get("/detail", function (req, res) {
     title: title,
     description: "Dispositivo móvil de Tienda e-commerce",
     picture_url: img,
-    quantity: unit,
+    quantity: +unit,
     currency_id: "PEN",
-    unit_price: price,
+    unit_price: +price,
   };
   preferencia.items.push(item);
+  // ahora modificamos las back_url para indicar el dominio de nuestra aplicacion
+  preferencia.back_urls.failure = `${req.get("host")}/failure`; // http://127.0.0.1:5000
+  preferencia.back_urls.success = `${req.get("host")}/success`;
+  preferencia.back_urls.pending = `${req.get("host")}/pending`;
+  // el notificiation_url solo se puede usar en ambientes de produccion (no localhost ni 127.0.0.1) porque es a ese endpoint en el cual se mandara el estado de la pasarela de pago y por ende al identificar uno de los dominios anteriores lanzara un error y no se procedera con la pasarela
+  //   preferencia.notification_url = `${req.get("host")}/notificaciones`;
+  const respuesta = await mercadopago.preferences.create(preferencia);
+  console.log(respuesta);
   res.render("detail", req.query);
 });
 
