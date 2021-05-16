@@ -1,6 +1,7 @@
 var express = require("express");
 var exphbs = require("express-handlebars");
 var mercadopago = require("mercadopago");
+var { json } = require("body-parser");
 require("dotenv").config();
 var port = process.env.PORT || 3000;
 // una vez que instalamos e importamos la libreria ahora es necesario definir las credenciales para que mp sepa quienes somos (algo asi como cuando usamos firebase)
@@ -11,7 +12,7 @@ mercadopago.configure({
   integrator_id: process.env.INTEGRATOR_ID,
 });
 var app = express();
-
+app.use(json());
 const cliente = {
   name: "Lalo",
   surname: "Landa",
